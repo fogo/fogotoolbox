@@ -1,0 +1,9 @@
+name: fogotoolbox
+dependencies:
+  - python>=3.5
+  - pytest
+  - pytest-datadir
+  - pytest-cov
+  - pytest-timeout
+  - pytest-mock
+  - flake8
