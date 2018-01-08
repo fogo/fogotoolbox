@@ -1,0 +1,37 @@
+language: python
+sudo: required
+
+env:
+  matrix:
+    - RUN_TYPE=linter
+    - RUN_TYPE=tests
+
+python:
+  - "3.5"
+  - "3.6"
+
+install:
+  # Setup using Conda (http://conda.pydata.org/docs/travis.html)
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --add channels conda-forge
+  - conda info -a  # for debug reasons
+
+  - conda create -n fogotoolbox python=$TRAVIS_PYTHON_VERSION
+  - conda env update -n fogotoolbox
+  - source activate fogotoolbox
+  - conda list  # for debug reasons
+
+  - sudo apt install -y gdb
+
+script:
+  - if [ "$RUN_TYPE" = "linter" ]; then .travis/linter; fi
+    # Running tests as superuser because some tests require it to run
+    # completely
+  - if [ "$RUN_TYPE" = "tests" ]; then sudo env PATH=$PATH PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH .travis/tests; fi
+
+after_success:
+  - coveralls

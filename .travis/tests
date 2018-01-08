@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+pytest -vv --cov=fogotoolbox --timeout=10
