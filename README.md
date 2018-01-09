@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/fogo/fogotoolbox.svg)](https://travis-ci.org/fogo/fogotoolbox)
+[![Coverage Status](https://coveralls.io/repos/github/fogo/fogotoolbox/badge.svg?branch=master)](https://coveralls.io/github/fogo/fogotoolbox?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 fogotoolbox

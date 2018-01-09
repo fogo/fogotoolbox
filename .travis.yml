@@ -27,6 +27,9 @@ install:
 
   - sudo apt install -y gdb
 
+  # setup necessary for coverage reports
+  - conda install coveralls
+
 script:
   - if [ "$RUN_TYPE" = "linter" ]; then .travis/linter; fi
     # Running tests as superuser because some tests require it to run
