@@ -24,6 +24,9 @@ def instrument_gdb(
     :param stdout: Refer to subprocess.Popen.
     :param stderr: Refer to subprocess.Popen.
     """
+    if not has_gdb():
+        raise FileNotFoundError("gdb not found")
+
     gdb = subprocess.Popen(
         "gdb -p {}".format(pid),
         shell=True,
@@ -38,3 +41,10 @@ def instrument_gdb(
     gdb.stdin.write(b"quit\n")
     gdb.stdin.flush()
     gdb.wait(timeout=5)
+
+
+def has_gdb() -> bool:
+    """
+    Is gdb available on user path?
+    """
+    return subprocess.call("gdb --version > /dev/null", shell=True) == 0
