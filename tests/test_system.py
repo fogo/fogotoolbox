@@ -47,6 +47,28 @@ def test_temp_mount(shared_datadir):
     assert "testtempmount" not in tmpfs
 
 
+def test_temp_mount_unmounted_arbitrarily(shared_datadir):
+    if not is_superuser():
+        pytest.xfail("can only run this test as superuser")
+
+    tmp = tempfile.mkdtemp(dir=shared_datadir)
+
+    path = os.path.join(tmp, "test")
+    with open(path, "w") as f:
+        f.write("hello world")
+    assert os.path.isfile(path)
+
+    # tmpfs starts empty, test file should no longer exist
+    with temp_mount(shared_datadir, "testtempmount"):
+        subprocess.check_call("umount {}".format(shared_datadir), shell=True)
+        assert os.path.isfile(path)
+
+    # make sure tmpfs was umounted on tear down
+    tmpfs = subprocess.check_output("mount | grep tmpfs", shell=True)
+    tmpfs = tmpfs.decode("utf8")
+    assert "testtempmount" not in tmpfs
+
+
 def test_temp_mount_failure_not_superuser(mocker):
     def fake(_):
         class Fake:
@@ -78,3 +100,28 @@ def test_temp_mount_failure_not_dir(mocker, shared_datadir):
         with temp_mount(invalid_dir, "testtempmount"):
             assert pwd.getpwuid.called
     assert str(e.value) == "{} is not a directory".format(invalid_dir)
+
+
+def test_temp_mount_failure_error_on_umount(mocker, shared_datadir):
+    if not is_superuser():
+        pytest.xfail("can only run this test as superuser")
+
+    cmd = [None]
+
+    def check_call(*args, **kwargs):
+        cmd[0] = args[0]
+        cmd_ = cmd[0]
+        if "umount" in cmd_:
+            raise subprocess.CalledProcessError(returncode=1, cmd=cmd_)
+        else:
+            # do nothing, because there isn't a reason to really
+            # mount when I am going to fail its umount. It is
+            # just something else to tear down manually later.
+            pass
+
+    with mocker.mock_module.patch.object(subprocess, "check_call", side_effect=check_call, autospec=True):
+        with pytest.raises(subprocess.CalledProcessError) as e:
+            with temp_mount(shared_datadir, "testtempmount"):
+                pass
+
+        assert str(e.value) == "Command '{}' returned non-zero exit status 1.".format(cmd[0])
