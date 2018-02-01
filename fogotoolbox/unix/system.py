@@ -79,10 +79,10 @@ def temp_mount(path: str, name: str):
 def _umount_tmpfs(path):
     try:
         _temp_cfg.remove(path)
-        subprocess.check_call("umount {}".format(path), shell=True)
+        subprocess.check_output("umount {}".format(path), shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        # errno 32: not mounted anymore, no reason to fail
-        if e.returncode != 32:
+        # if not mounted anymore, no reason to fail
+        if not re.search(r"umount: .+: not mounted", e.output.decode("utf-8")):
             raise
 
 

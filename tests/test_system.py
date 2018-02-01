@@ -108,18 +108,20 @@ def test_temp_mount_failure_error_on_umount(mocker, shared_datadir):
 
     cmd = [None]
 
-    def check_call(*args, **kwargs):
+    def check_output(*args, **kwargs):
         cmd[0] = args[0]
         cmd_ = cmd[0]
         if "umount" in cmd_:
-            raise subprocess.CalledProcessError(returncode=1, cmd=cmd_)
-        else:
-            # do nothing, because there isn't a reason to really
-            # mount when I am going to fail its umount. It is
-            # just something else to tear down manually later.
-            pass
+            raise subprocess.CalledProcessError(
+                returncode=1,
+                cmd=cmd_,
+                output="umount: {}: this is not what I'm expecting".format(shared_datadir).encode("utf8"))
 
-    with mocker.mock_module.patch.object(subprocess, "check_call", side_effect=check_call, autospec=True):
+    # do nothing, because there isn't a reason to really mount when I
+    # am going to fail its umount. It is just something else to tear down
+    # manually later.
+    mocker.patch.object(subprocess, "check_call")
+    with mocker.mock_module.patch.object(subprocess, "check_output", side_effect=check_output, autospec=True):
         with pytest.raises(subprocess.CalledProcessError) as e:
             with temp_mount(shared_datadir, "testtempmount"):
                 pass
