@@ -1,0 +1,3 @@
+[run]
+omit =
+    fogotoolbox/markdown/__main__.py
