@@ -75,6 +75,10 @@ def test_replacing_forbidden():
 ### привет welcome to unicode
 
 {filler}
+
+#### separated/by/slash
+
+{filler}
 """.format(filler=filler)
 
     assert md_table_contents(md=md) == """\
@@ -85,4 +89,5 @@ def test_replacing_forbidden():
     * [Question mark?](#question-mark)
   * [Hyphen - or else](#hyphen-or-else)
     * [... dots](#dots)
-    * [привет welcome to unicode](#привет-welcome-to-unicode)"""
+    * [привет welcome to unicode](#привет-welcome-to-unicode)
+      * [separated/by/slash](#separatedbyslash)"""

@@ -14,7 +14,7 @@ import re
 from typing import Union, Iterator
 
 # Based on https://docs.gitlab.com/ee/user/markdown.html#header-ids-and-links
-forbidden_chars = r"[\(\):\",\?\-\.]+"
+forbidden_chars = r"[\(\):\",\?\-\./]+"
 
 
 def md_table_contents(md: str) -> str:
