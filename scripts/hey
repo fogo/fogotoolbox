@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+# Display a screen notification once process done, including its duration
+# NOTE: I guess right now it only works on Ubuntu!
+$1 ${@:2}
+printf -v message "Status: %d Duration: %02d:%02d" $? $(($SECONDS / 60)) $(($SECONDS % 60))
+notify-send -u low "Command $1 done!" "$message"

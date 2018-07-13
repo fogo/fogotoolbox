@@ -1,0 +1,4 @@
+#! /usr/bin/env bash
+
+# Runs process without any kind of output
+$1 "${@:2}" > /dev/null 2>&1
