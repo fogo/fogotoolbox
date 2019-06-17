@@ -1,0 +1,14 @@
+name: fogotoolbox-extra
+dependencies:
+  - python>=3.5
+  - pytest
+  - pytest-datadir
+  - pytest-cov
+  - pytest-timeout
+  - pytest-mock
+  - flake8
+  # required by cmake-dep-graph script
+  - networkx
+  - pydot
+  - matplotlib
+  - graphviz

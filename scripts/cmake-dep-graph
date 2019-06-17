@@ -1,0 +1,89 @@
+#! /usr/bin/env python3
+
+"""
+Display the dependency graph of CMake project.
+
+First requirement is that you run your CMake command line with the option --graphviz=<DOT-FILE>.
+This will generate a .dot file that can be parsed to determine the dependency graph of your
+project.
+
+Every node represents a target found in CMake project.
+
+A node pointed by an edge's arrow means it depends on that target to build.
+"""
+import argparse
+import ast
+import re
+
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_pydot import read_dot
+
+
+def plot_cmake_dependency_graph(dot_filename, *, target_name=None, excluded_targets=None, depth_limit=None, reverse=False):
+    G = read_dot(dot_filename)
+    all_targets = {n[0]: ast.literal_eval(n[1]['label']) for n in G.nodes(data=True)}
+
+    if excluded_targets:
+        for excluded_target in excluded_targets:
+            expr = re.compile(excluded_target)
+            for node, target_name_ in all_targets.items():
+                if expr.search(target_name_) and G.has_node(node):
+                        G.remove_node(node)
+        all_targets = {n[0]: ast.literal_eval(n[1]['label']) for n in G.nodes(data=True)}
+
+    if target_name is not None:
+        target = [k for k, v in all_targets.items() if v == target_name][0]
+        filter_nodes = nx.bfs_tree(G, target, depth_limit=depth_limit, reverse=reverse)
+        to_plot = G.subgraph(filter_nodes)
+        labels = {k: v for k, v in all_targets.items() if k in filter_nodes}
+    else:
+        to_plot = G
+        labels = all_targets
+
+    pos = nx.nx_pydot.graphviz_layout(to_plot)
+
+    # https://stackoverflow.com/questions/54439731/networkx-read-dot-does-not-inherit-attributes
+    nx.draw_networkx(to_plot, with_labels=True, labels=labels, pos=pos, font_size=8)
+    plt.show()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-t", "--target",
+        help="Use this target as the root of dependency graph",
+    )
+    parser.add_argument(
+        "-e", "--excluded-targets",
+        help="Remove targets that match these regular expressions",
+        nargs="*",
+    )
+    parser.add_argument(
+        "-d", "--depth",
+        help="If a target is specified, limits the depth of graph",
+        type=int,
+        default=None,
+    )
+    parser.add_argument(
+        "-r", "--reverse",
+        help="If a target is specified, shows who depends on it instead of its dependencies",
+        action="store_true",
+    )
+    parser.add_argument("dotfile", help="The .dot file generated during CMake project setup")
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    parsed = parse_args()
+
+    plot_cmake_dependency_graph(
+        dot_filename=parsed.dotfile,
+        target_name=parsed.target,
+        depth_limit=parsed.depth,
+        reverse=parsed.reverse,
+        excluded_targets=parsed.excluded_targets,
+    )
